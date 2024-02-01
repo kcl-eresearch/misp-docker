@@ -95,7 +95,7 @@ services:
       - "MYSQL_PASSWORD=${MYSQL_PASSWORD:-example}"
       - "MYSQL_DATABASE=${MYSQL_DATABASE:-misp}"
       # Redis settings
-      - "REDIS_FQDN=${REDIS_FQDN:-redis}"
+      - "REDIS_BACKEND=${REDIS_BACKEND:-redis}"
       - "REDIS_PORT=${REDIS_PORT:-6379}"
       - "REDIS_PW=${REDIS_PW}"
       - "REDIS_DATABASE=${REDIS_DATABASE:-245}"
@@ -108,7 +108,7 @@ services:
         - MODULES_COMMIT=${MODULES_COMMIT}
         - LIBFAUP_COMMIT=${LIBFAUP_COMMIT}
     environment:
-      - "REDIS_FQDN=${REDIS_FQDN:-redis}"
+      - "REDIS_BACKEND=${REDIS_BACKEND:-redis}"
       - "REDIS_PORT=${REDIS_PORT:-6379}"
       - "REDIS_PW=${REDIS_PW}"
       - "REDIS_DATABASE=${REDIS_DATABASE:-245}"
