@@ -94,7 +94,11 @@ services:
       - "MYSQL_USER=${MYSQL_USER:-misp}"
       - "MYSQL_PASSWORD=${MYSQL_PASSWORD:-example}"
       - "MYSQL_DATABASE=${MYSQL_DATABASE:-misp}"
-  
+      # Redis settings
+      - "REDIS_FQDN=${REDIS_FQDN:-redis}"
+      - "REDIS_PORT=${REDIS_PORT:-6379}"
+      - "REDIS_PW=${REDIS_PW}"
+      - "REDIS_DATABASE=${REDIS_DATABASE:-245}"
   misp-modules:
     image: ghcr.io/misp/misp-docker/misp-modules:latest
     build:
@@ -104,7 +108,10 @@ services:
         - MODULES_COMMIT=${MODULES_COMMIT}
         - LIBFAUP_COMMIT=${LIBFAUP_COMMIT}
     environment:
-      - "REDIS_BACKEND=redis"
+      - "REDIS_FQDN=${REDIS_FQDN:-redis}"
+      - "REDIS_PORT=${REDIS_PORT:-6379}"
+      - "REDIS_PW=${REDIS_PW}"
+      - "REDIS_DATABASE=${REDIS_DATABASE:-245}"
     depends_on:
       - redis
 

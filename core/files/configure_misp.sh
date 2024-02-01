@@ -5,7 +5,22 @@ source /utilities.sh
 
 [ -z "$ADMIN_EMAIL" ] && ADMIN_EMAIL="admin@admin.test"
 [ -z "$GPG_PASSPHRASE" ] && GPG_PASSPHRASE="passphrase"
+
+# Configure Redis
 [ -z "$REDIS_FQDN" ] && REDIS_FQDN="redis"
+[ -z "$REDIS_PORT" ] && REDIS_PORT=6379
+[ -z "$REDIS_DATABASE" ] && REDIS_DATABASE=13
+
+# Environment variable that may contain the redis password 
+# or path to the file with the redis password
+[ -z "$REDIS_PW" ] && REDIS_PW=""
+if [ -n "$REDIS_PW" ] ; then
+    if [ -f "$REDIS_PW" ]; then
+        echo "Loading password from file specified in REDIS_PW."
+        REDIS_PW=$(cat "$REDIS_PW")
+    fi
+fi
+
 [ -z "$MISP_MODULES_FQDN" ] && MISP_MODULES_FQDN="http://misp-modules"
 
 # Switches to selectively disable configuration logic
@@ -20,9 +35,17 @@ init_configuration(){
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "MISP.email" "${MISP_EMAIL-$ADMIN_EMAIL}"
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "MISP.contact" "${MISP_CONTACT-$ADMIN_EMAIL}"
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "MISP.redis_host" "$REDIS_FQDN"
+    sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "MISP.redis_port" "$REDIS_PORT"
+    sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "MISP.redis_database" "$REDIS_DATABASE"
+    if [ -n "$REDIS_PW" ] ; then
+        sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "MISP.redis_password" "$REDIS_PW"
+        sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "Plugin.ZeroMQ_redis_password" "$REDIS_PW"
+    fi
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "MISP.python_bin" $(which python3)
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q -f "MISP.ca_path" "/etc/ssl/certs/ca-certificates.crt"
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "Plugin.ZeroMQ_redis_host" "$REDIS_FQDN"
+    sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "Plugin.ZeroMQ_redis_port" "$REDIS_PORT"
+    sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "Plugin.ZeroMQ_redis_database" "$REDIS_DATABASE"
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "Plugin.ZeroMQ_enable" true
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "Plugin.Enrichment_services_enable" true
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "Plugin.Enrichment_services_url" "$MISP_MODULES_FQDN"
@@ -42,6 +65,11 @@ init_workers(){
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "SimpleBackgroundJobs.supervisor_password" "supervisor"
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "SimpleBackgroundJobs.supervisor_user" "supervisor"
     sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "SimpleBackgroundJobs.redis_host" "$REDIS_FQDN"
+    sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "SimpleBackgroundJobs.redis_port" "$REDIS_PORT"
+    sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "SimpleBackgroundJobs.redis_database" "$REDIS_DATABASE"
+    if [ -n "$REDIS_PW" ] ; then
+        sudo -u www-data /var/www/MISP/app/Console/cake Admin setSetting -q "SimpleBackgroundJobs.redis_password" "$REDIS_PW"
+    fi
 
     echo "... starting background workers"
     supervisorctl start misp-workers:*
